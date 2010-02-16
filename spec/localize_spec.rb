@@ -13,10 +13,10 @@ describe I18n::Backend::Database do
     before(:each) do
       I18n.default_locale = "en"
       if File.exists?('vendor/rails/activesupport/lib/active_support/locale/en.yml')
-        I18nUtil.load_from_yml 'vendor/rails/activesupport/lib/active_support/locale/en.yml'
+        I18nUtil.load_from_file 'vendor/rails/activesupport/lib/active_support/locale/en.yml'
       else
         activesupport_gem = Gem.cache.find_name('activesupport').sort_by { |g| g.version.version }.last
-        I18nUtil.load_from_yml "#{activesupport_gem.full_gem_path}/lib/active_support/locale/en.yml"
+        I18nUtil.load_from_file "#{activesupport_gem.full_gem_path}/lib/active_support/locale/en.yml"
       end
     end
 

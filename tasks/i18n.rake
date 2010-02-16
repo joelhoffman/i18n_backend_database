@@ -27,7 +27,7 @@ namespace :i18n do
     task :from_rails => :environment do
       yaml_files = ENV['LOCALE_YAML_FILES'] ? ENV['LOCALE_YAML_FILES'].split(',') : I18n.load_path
       yaml_files.each do |file|
-        I18nUtil.load_from_yml file
+        I18nUtil.load_from_file(file)
       end
     end
 

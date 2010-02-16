@@ -1,8 +1,13 @@
 class I18nUtil
 
   # Create tanslation records from the YAML file.  Will create the required locales if they do not exist.
-  def self.load_from_yml(file_name)
-    data = YAML::load(IO.read(file_name))
+  def self.load_from_file(file_name)
+    if file_name =~ /\.yml$/
+      data = YAML::load(IO.read(file_name))
+    elsif file_name =~ /\.rb$/
+      data = eval(IO.read(file_name), binding, file_name)
+    end
+
     data.each do |code, translations| 
       locale = Locale.find_or_create_by_code(code)
       backend = I18n::Backend::Simple.new
