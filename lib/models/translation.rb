@@ -40,7 +40,9 @@ class Translation < ActiveRecord::Base
     end
 
     def update_cache
-      new_cache_key = Translation.ck(self.locale, self.key, false)
-      I18n.backend.cache_store.write(new_cache_key, self.value)
+      if I18n.backend.respond_to?(:cache_store)
+        new_cache_key = Translation.ck(self.locale, self.key, false)
+        I18n.backend.cache_store.write(new_cache_key, self.value)
+      end
     end
 end
