@@ -3,6 +3,7 @@ require 'digest/md5'
 class Translation < ActiveRecord::Base
   belongs_to :locale
   validates_presence_of :key
+  validates_presence_of :locale_id
   before_validation_on_create :generate_hash_key
   after_update  :update_cache
 

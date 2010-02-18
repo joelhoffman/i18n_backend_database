@@ -9,7 +9,9 @@ class I18nUtil
     end
 
     data.each do |code, translations| 
-      locale = Locale.find_or_create_by_code(code)
+      locale = Locale.find_or_create_by_code(code.to_s)
+      locale.save!
+
       backend = I18n::Backend::Simple.new
       keys = extract_i18n_keys(translations)
       keys.each do |key|
