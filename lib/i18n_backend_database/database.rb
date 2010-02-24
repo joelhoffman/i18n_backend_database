@@ -49,11 +49,6 @@ module I18n
         entry = lookup(@locale, key)
         cache_lookup = true unless entry.nil?
 
-        # if no entry exists for the current locale and the current locale is not the default locale then lookup translations for the default locale for this key
-        unless entry || @locale.default_locale?
-          entry = use_and_copy_default_locale_translations_if_they_exist(@locale, key)
-        end
-
         # if we have no entry and some defaults ... start looking them up
         unless entry || key.is_a?(String) || options[:default].blank?
           default = options[:default].is_a?(Array) ? options[:default].shift : options.delete(:default)
@@ -80,6 +75,11 @@ module I18n
             @cache_store.write(Translation.ck(@locale, key), entry) unless cache_lookup == true
             return entry
           end
+        end
+
+        # if no entry exists for the current locale and the current locale is not the default locale then lookup translations for the default locale for this key
+        unless entry || @locale.default_locale?
+          entry = use_and_copy_default_locale_translations_if_they_exist(@locale, key)
         end
 
         # we check the database before creating a translation as we can have translations with nil values
