@@ -58,8 +58,7 @@ module I18n
         # this needs to be folded into the above at some point.
         # this handles the case where the default of the string key is a space
         if !entry && key.is_a?(String) && options[:default] == " "
-          default = options[:default].is_a?(Array) ? options[:default].shift : options.delete(:default)
-          return translate(@locale.code, default, options.dup)
+          return translate(@locale.code, options.delete(:default), options.dup)
         end
 
         # The requested key might not be a parent node in a hierarchy of keys instead of a regular 'leaf' node
@@ -75,6 +74,10 @@ module I18n
             @cache_store.write(Translation.ck(@locale, key), entry) unless cache_lookup == true
             return entry
           end
+        end
+
+        if !entry && options[:default].present?
+          return options[:default]
         end
 
         # if no entry exists for the current locale and the current locale is not the default locale then lookup translations for the default locale for this key
