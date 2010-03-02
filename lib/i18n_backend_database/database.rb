@@ -255,9 +255,8 @@ module I18n
               if records.map(&:raw_key).uniq.size > 1
                 result[key.to_sym] = hashify_record_array(key, records, base_key)
               else
-                value = records.first.value
-                value = value.to_i if value == "0" || value.to_i != 0 #simple integer cast
-                result[key.to_sym] = value
+                values = records.map { |r| v = r.value; v = v.to_i if v == "0" || v.to_i != 0; v }
+                result[key.to_sym] = values.length > 1 ? values : values.first
               end
             end
           }
