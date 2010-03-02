@@ -65,10 +65,10 @@ module I18n
         #   that would simply result in a string return.  If so, check the database for possible children 
         #   and return them in a nested hash if we find them.
         #   We can safely ignore pluralization indeces here since they should never apply to a hash return
-        if !entry && (key.is_a?(String) || key.is_a?(Symbol))
+        if !entry && (key.is_a?(String) || key.is_a?(Symbol)) || key == ''
           #We need to escape % and \.  Rails will handle the rest.
           escaped_key = key.to_s.gsub('\\', '\\\\\\\\').gsub(/%/, '\%')
-          children = @locale.translations.find :all, :conditions => ["raw_key like ?", "#{escaped_key}.%"]
+          children = @locale.translations.find :all, :conditions => ["raw_key like ?", key == '' ? '%' : "#{escaped_key}.%"]
           if children.size > 0
             entry = hashify_record_array(key.to_s, children)
             @cache_store.write(Translation.ck(@locale, key), entry) unless cache_lookup == true
@@ -237,7 +237,7 @@ module I18n
           return key.gsub(/^#{root_key}\./, '')
         end
 
-        def hashify_record_array(root_key, record_array)
+        def hashify_record_array(root_key, record_array, whole_root_key = root_key)
           return nil if record_array.nil? || record_array.empty?
 
           #Make sure that all of our records have raw_keys
@@ -245,21 +245,20 @@ module I18n
 
           # Start building our return hash
           result = {}
-          record_array.each { |record|
-            key = strip_root_key(root_key, record.raw_key)
-            next unless key.present?
+
+          record_array.group_by { |r| strip_root_key(whole_root_key, r.raw_key).split('.').first }.each { |key, records|
+            base_key = [whole_root_key, key].reject(&:blank?).join('.')
 
             # If we contain a period delimiter, we need to add a sub-hash.
             # Otherwise, we just insert the value at this level.
-            if key.index(".")
-              internal_node = key.slice(0, key.index('.'))
-              new_root = root_key + '.' + internal_node
-              new_record_array = record_array.select {|record| record.raw_key.starts_with? new_root}
-              result[internal_node.to_sym] = hashify_record_array(new_root, new_record_array)
-            else
-              value = record.value
-              value = value.to_i if value == "0" || value.to_i != 0 #simple integer cast
-              result[key.to_sym] = value
+            if base_key != whole_root_key
+              if records.map(&:raw_key).uniq.size > 1
+                result[key.to_sym] = hashify_record_array(key, records, base_key)
+              else
+                value = records.first.value
+                value = value.to_i if value == "0" || value.to_i != 0 #simple integer cast
+                result[key.to_sym] = value
+              end
             end
           }
           result
