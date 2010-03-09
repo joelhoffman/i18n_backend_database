@@ -234,12 +234,11 @@ module I18n
 
         def strip_root_key(root_key, key)
           return nil if key.nil?
-          return key.gsub(/^#{root_key}\./, '')
+          return key.gsub(/^#{root_key}\./i, '').strip
         end
 
-        def hashify_record_array(root_key, record_array, whole_root_key = root_key)
+        def hashify_record_array(whole_root_key, record_array)
           return nil if record_array.nil? || record_array.empty?
-
           #Make sure that all of our records have raw_keys
           record_array.reject! {|record| record.raw_key.nil?}
 
@@ -252,8 +251,8 @@ module I18n
             # If we contain a period delimiter, we need to add a sub-hash.
             # Otherwise, we just insert the value at this level.
             if base_key != whole_root_key
-              if records.map(&:raw_key).uniq.size > 1
-                result[key.to_sym] = hashify_record_array(key, records, base_key)
+              if records.map(&:raw_key).uniq.size > 1 && !whole_root_key.blank?
+                result[key.to_sym] = hashify_record_array(base_key, records)
               else
                 values = records.map { |r| v = r.value; v = v.to_i if v == "0" || v.to_i != 0; v }
                 result[key.to_sym] = values.length > 1 ? values : values.first
